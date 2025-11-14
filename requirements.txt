@@ -1,0 +1,13 @@
+torch==2.1.2
+torchaudio==2.1.2
+torchvision==0.16.2
+pytorch_lightning==2.2.1
+numpy~=1.23.3
+pillow~=10.2.0
+matplotlib==3.2.0
+yacs~=0.1.8
+smplx~=0.1.28
+git+https://github.com/openai/CLIP.git
+scipy
+h5py
+hydra-core
