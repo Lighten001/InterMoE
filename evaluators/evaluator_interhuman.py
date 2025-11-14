@@ -18,7 +18,7 @@ class BatchEvaluationDataset(Dataset):
         self.normalizer = MotionNormalizer()
         self.model = model.to(device)
         self.model.eval()
-        dataloader = DataLoader(dataset, batch_size=8, num_workers=1, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=64, num_workers=1, shuffle=True)
         mm_dataloader = DataLoader(dataset, batch_size=1, num_workers=1, shuffle=True)
         self.max_length = dataset.max_length
 
