@@ -64,7 +64,7 @@ eval_model/
 
 ### 1. Download the checkpoint
 
-Download checkpoints from [Google drive](https://drive.google.com/file/d/1lsa2ifsicd-dW013IYXrtLRr6qcucmzy/view?usp=sharing), unzip the compressed file and put them under the ``checkpoints`` foler.
+Download checkpoints from [Google drive](https://drive.google.com/file/d/1lsa2ifsicd-dW013IYXrtLRr6qcucmzy/view?usp=sharing), unzip the compressed file and put them under the ``checkpoints`` folder.
 
 For example, it will be like:
 ```
@@ -75,7 +75,7 @@ checkpoints/
     config.yaml
 ```
 
-### 2. Modify the input file ./prompts.txt like:
+### 2. Modify the input file ``./prompts.txt`` like:
 
 ```
 The two are blaming each other and having an intense argument.
