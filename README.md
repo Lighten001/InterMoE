@@ -1,8 +1,20 @@
 # InterMoE: Individual-Specific 3D Human Interaction Generation via Dynamic Temporal-Selective MoE
 
+<p align="left">
+  <a href='https://arxiv.org/abs/2511.13488'>
+    <img src='https://img.shields.io/badge/Arxiv-2511.13488-A42C25?style=flat&logo=arXiv&logoColor=A42C25'>
+  </a>
+  <a href='https://arxiv.org/pdf/2511.13488'>
+    <img src='https://img.shields.io/badge/Paper-PDF-yellow?style=flat&logo=arXiv&logoColor=yellow'>
+  </a>
+  <a href=''>
+  <img src='https://img.shields.io/badge/Project-Page-pink?style=flat&logo=Google%20chrome&logoColor=pink'></a>
+  <a href="" target='_blank'>
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=lighten001.InterMoE&left_color=gray&right_color=orange">
+  </a>
+</p>
 
-
-This repository contains the official implementation for the paper: [InterMoE: Individual-Specific 3D Human Interaction Generation via Dynamic Temporal-Selective MoE (AAAI-26)]().
+This repository contains the official implementation for the paper: [InterMoE: Individual-Specific 3D Human Interaction Generation via Dynamic Temporal-Selective MoE (AAAI-26)](https://arxiv.org/abs/2511.13488).
 
 
 ## TODO
