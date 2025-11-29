@@ -18,7 +18,9 @@ class BatchEvaluationDataset(Dataset):
         self.normalizer = MotionNormalizer()
         self.model = model.to(device)
         self.model.eval()
-        dataloader = DataLoader(dataset, batch_size=64, num_workers=1, shuffle=True)
+        is_vae = getattr(self.model, "_stage", "") == "vae"
+        bsz = 1 if is_vae else 64 
+        dataloader = DataLoader(dataset, batch_size=bsz, num_workers=1, shuffle=True)
         mm_dataloader = DataLoader(dataset, batch_size=1, num_workers=1, shuffle=True)
         self.max_length = dataset.max_length
 
@@ -30,16 +32,22 @@ class BatchEvaluationDataset(Dataset):
         mm_generated_motions = []
         # Pre-process all target captions
         with torch.no_grad():
-            for i, data in tqdm(enumerate(dataloader)):
+            for _, data in tqdm(enumerate(dataloader)):
                 name, text, motion1, motion2, motion_lens = data
                 batch = {}
 
                 batch["text"] = list(text)
-                batch["motion_lens"] = motion_lens + 3
-                if getattr(self.model, "_stage", "") == "vae":
+                # NOTE: important, only compare generated motion.
+                if is_vae:
+                    # reconstruction
+                    motion_lens = (motion_lens // 4) * 4
+                    batch["motion_lens"] = motion_lens
                     batch["motions"] = torch.cat([motion1, motion2], dim=-1)
-
-                batch = self.model.forward_test_batch(batch)
+                else:
+                    # generation
+                    batch["motion_lens"] = motion_lens + 3
+                
+                batch = self.model.forward_test(batch)
 
                 # import ipdb; ipdb.set_trace()
 
@@ -50,7 +58,6 @@ class BatchEvaluationDataset(Dataset):
                 motions_output = self.normalizer.backward(
                     motions_output.cpu().detach().numpy()
                 )
-                generate_lens = batch["generate_lens"]
                 mask = lengths_to_mask(motion_lens, motions_output.shape[1])
                 motions_output = motions_output * mask[..., None, None].detach().numpy()
 
@@ -82,8 +89,12 @@ class BatchEvaluationDataset(Dataset):
 
                 batch["text"] = list(text) * mm_num_repeats
                 batch["motion_lens"] = motion_lens + 3
-                if getattr(self.model, "_stage", "") == "vae":
+                if is_vae:
+                    motion_lens = (motion_lens // 4) * 4
+                    batch["motion_lens"] = motion_lens
                     batch["motions"] = torch.cat([motion1, motion2], dim=-1)
+                else:
+                    batch["motion_lens"] = motion_lens + 3
 
                 batch = self.model.forward_test(batch)
 
@@ -96,8 +107,6 @@ class BatchEvaluationDataset(Dataset):
                 motions_output = self.normalizer.backward(
                     motions_output.cpu().detach().numpy()
                 )
-                # generate_lens = batch["generate_lens"]
-                generate_lens = motion_lens
                 mask = lengths_to_mask(motion_lens, motions_output.shape[1])
                 motions_output = motions_output * mask[..., None, None].detach().numpy()
 
@@ -112,7 +121,7 @@ class BatchEvaluationDataset(Dataset):
                 # import ipdb; ipdb.set_trace()
                 mm_sub_dict = {
                     "mm_motions": motions_output,
-                    "motion_lens": generate_lens[0],
+                    "motion_lens": motion_lens[0],
                     "text": text[0],
                 }
                 mm_generated_motions.append(mm_sub_dict)

@@ -130,6 +130,10 @@ python eval_interhuman.py --cfg ${CFG_PATH}
 python eval_interx.py --cfg ${CFG_PATH}
 ```
 
+To only evaluate the VAE, modify config files (``model.CHECKPOINT``) in ``VAE_CFG_PATH`` and run:
+```shell
+python eval_interhuman.py --cfg ${VAE_CFG_PATH}
+```
 
 ## Acknowledgement
 
