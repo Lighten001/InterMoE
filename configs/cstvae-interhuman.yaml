@@ -1,0 +1,69 @@
+GENERAL:
+  EXP_NAME: cstvae-interhuman
+  CHECKPOINT: ./checkpoints/
+  LOG_DIR: ./log
+  DATASET_NAME: interhuman
+TRAIN:
+  LR: 0.0002
+  WEIGHT_DECAY: 2.0e-05
+  BATCH_SIZE: 256
+  EPOCH: 500
+  STEP: 30000
+  LOG_STEPS: 10
+  SAVE_STEPS: 20000
+  SAVE_EPOCH: 50
+  RESUME: null
+  NUM_WORKERS: 2
+  MODE: finetune
+  LAST_EPOCH: 0
+  LAST_ITER: 0
+  lambda_kl: 0.02
+  lambda_pos: 0.5
+  lambda_recon: 1.0
+  lambda_vel: 0.5
+  lambda_rot: 0.5
+model:
+  _stage: vae
+  NAME: CasualSTVAE
+  latent_dim: 64
+  pose_dim: 262
+  dataset_name: interhuman
+  activation: silu
+  joints_num: 22
+  contact_joints:
+  - 7
+  - 10
+  - 8
+  - 11
+  n_layers: 2
+  n_extra_layers: 1
+  kernel_size: 3
+  norm: none
+  dropout: 0.1
+  CHECKPOINT: checkpoints/intermoe/model/vae.ckpt
+  MOTION_REP: global
+dataset:
+  STAGE: VAE
+  NAME: interhuman
+  interhuman:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: train
+    CACHE: true
+    WINDOW_SIZE: 64
+    WINDOW_STRIDE: 10
+  interhuman_val:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: val
+    CACHE: true
+    WINDOW_SIZE: 64
+    WINDOW_STRIDE: 10
+  interhuman_test:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: test
+    CACHE: true

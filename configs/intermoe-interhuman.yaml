@@ -1,0 +1,87 @@
+GENERAL:
+  EXP_NAME: intermoe-interhuman
+  CHECKPOINT: ./checkpoints/
+  LOG_DIR: ./log
+  DATASET_NAME: interhuman
+TRAIN:
+  LR: 0.0001
+  WEIGHT_DECAY: 2.0e-05
+  BATCH_SIZE: 64
+  EPOCH: 1000
+  STEP: 1000000
+  LOG_STEPS: 10
+  SAVE_STEPS: 20000
+  SAVE_EPOCH: 250
+  RESUME: null
+  NUM_WORKERS: 2
+  MODE: finetune  # unused
+  LAST_EPOCH: 0
+  LAST_ITER: 0
+  EVAL: true
+model:
+  NAME: InterMoE
+  NUM_LAYERS: 8
+  NUM_HEADS: 8
+  DROPOUT: 0.1
+  INPUT_DIM: 448
+  LATENT_DIM: 768
+  FF_SIZE: 1024
+  ACTIVATION: gelu
+  use_moe: dualdydiff
+  MoE_config:
+    n_shared_experts: 0
+    num_experts: 8
+    capacity: 1
+    init_MoeMLP: false
+    interleave: true          # unused
+  CapacityPred_loss_weight: 1 # unused
+  vae_ckpt: checkpoints/intermoe/model/vae.ckpt
+  vae:
+    NAME: CasualSTVAE
+    latent_dim: 64
+    pose_dim: 262
+    dataset_name: interhuman
+    activation: silu
+    joints_num: 22
+    contact_joints:
+    - 7
+    - 10
+    - 8
+    - 11
+    n_layers: 2
+    n_extra_layers: 1
+    kernel_size: 3
+    norm: none
+    dropout: 0.1
+  CHECKPOINT: checkpoints/intermoe/model/denoiser.ckpt
+  DIFFUSION_STEPS: 1000
+  BETA_SCHEDULER: cosine
+  SAMPLER: uniform
+  MOTION_REP: global
+  FINETUNE: false  # unused
+  TEXT_ENCODER: clip
+  T_BAR: 700
+  CONTROL: text
+  STRATEGY: ddim50
+  CFG_WEIGHT: 3.5
+dataset:
+  STAGE: Denoiser
+  NAME: interhuman
+  interhuman:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: train
+    CACHE: true
+  interhuman_val:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: val
+    CACHE: true
+  interhuman_test:
+    NAME: interhuman
+    DATA_ROOT: ./data/InterHuman/
+    MOTION_REP: global
+    MODE: test
+    CACHE: true
