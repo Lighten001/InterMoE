@@ -159,35 +159,3 @@ class CasualSTVAE(nn.Module):
 
         batch["output"] = output
         return batch
-
-    def forward_test_batch(self, input_dict):
-        """
-        input_dict: {
-            "motions": [B, T, D],
-            "motion_lens": [B]
-        }
-        x: [B, T, D]
-        z: [B, T, J_out, D]
-        out: [B, T, D]
-        """
-
-        device = next(self.motion_enc.parameters()).device
-        motions = input_dict["motions"].to(device)  # B T D
-        B = motions.shape
-
-        motion_lens = input_dict["motion_lens"]
-
-        m1, m2 = motions.chunk(2, dim=-1)
-
-        m1 = m1[:, : motion_lens[0], :]
-        m2 = m2[:, : motion_lens[0], :]
-
-        normed_m1 = self._normalizer.forward(m1)
-        normed_m2 = self._normalizer.forward(m2)
-        pred_m1, _ = self.forward(normed_m1)
-        pred_m2, _ = self.forward(normed_m2)
-
-        output = torch.cat([pred_m1, pred_m2], dim=-1)
-
-        input_dict["output"] = output
-        return input_dict
