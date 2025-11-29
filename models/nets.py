@@ -241,39 +241,6 @@ class LatentInterDiffusion(nn.Module):
         cond = batch["cond"]
         # x_start = batch["motions"]
         B = cond.shape[0]
-        T = batch["motion_lens"][0] // 4  # NOTE //4 for vae
-
-        batch["denoiser_lens"] = T
-
-        timestep_respacing = self.sampling_strategy
-        self.diffusion_test = MotionDiffusion(
-            use_timesteps=space_timesteps(self.diffusion_steps, timestep_respacing),
-            betas=self.betas,
-            motion_rep=self.motion_rep,
-            model_mean_type=ModelMeanType.START_X,
-            model_var_type=ModelVarType.FIXED_SMALL,
-            loss_type=LossType.MSE,
-            rescale_timesteps=False,
-        )
-
-        self.cfg_model = ClassifierFreeSampleModel(self.net, self.cfg_weight)
-        output = self.diffusion_test.ddim_sample_loop(
-            self.cfg_model,
-            (B, T, self.nfeats * 2),
-            clip_denoised=False,
-            progress=True,
-            model_kwargs={
-                "mask": None,
-                "cond": cond,
-            },
-            x_start=None,
-        )
-        return {"output": output}
-
-    def forward_batch(self, batch):
-        cond = batch["cond"]
-        # x_start = batch["motions"]
-        B = cond.shape[0]
         motion_lens = batch["motion_lens"] // 4  # NOTE //4 for vae
         T = motion_lens.max()
 
@@ -297,7 +264,7 @@ class LatentInterDiffusion(nn.Module):
             self.cfg_model,
             (B, T, self.nfeats * 2),
             clip_denoised=False,
-            progress=False,
+            progress=False if B > 1 else True,
             model_kwargs={
                 "mask": seq_mask,
                 "cond": cond,

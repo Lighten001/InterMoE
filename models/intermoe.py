@@ -72,12 +72,6 @@ class InterMoE(nn.Module):
         batch.update(self.decode_motion(batch))
         return batch
 
-    def forward_test_batch(self, batch):
-        batch = self.text_process(batch)
-        batch.update(self.denoiser.forward_batch(batch))
-        batch.update(self.vae_decode(batch))
-        return batch
-
     def text_process(self, batch):
         device = next(self.clip_transformer.parameters()).device
         raw_text = batch["text"]
