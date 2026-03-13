@@ -113,8 +113,13 @@ The results will be in the ``GENERAL.CHECKPOINT/GENERAL.EXP_NAME/results`` sub-f
 
 ## Train
 
+For the denoiser:
+```shell
+CUDA_VISIBLE_DEVICES=0,1 python train_denoiser.py --cfg ${CFG_PATH}
+# Note: we train on two GPUs as same as the setting in paper.
 
-Coming soon.
+# for example, the CFG_PATH can be checkpoints/intermoe-interhuman/config.yaml.
+```
 
 
 ## Evaluation
