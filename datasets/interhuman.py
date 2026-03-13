@@ -8,7 +8,7 @@ import os
 from os.path import join as pjoin
 
 from utils.interhuman import process_motion_np, rigid_transform, swap_left_right
-from utils.quaternion import (qmul_np, qinv_np, qrot_np)
+from utils.quaternion import qmul_np, qinv_np, qrot_np
 
 FPS = 30
 def load_motion(file_path, min_length, swap=False):
@@ -17,8 +17,8 @@ def load_motion(file_path, min_length, swap=False):
     except:
         print("error: ", file_path)
         return None, None
-    motion1 = motion[:, :22 * 3]
-    motion2 = motion[:, 62 * 3:62 * 3 + 21 * 6]
+    motion1 = motion[:, : 22 * 3]
+    motion2 = motion[:, 62 * 3 : 62 * 3 + 21 * 6]
     motion = np.concatenate([motion1, motion2], axis=1)
 
     if motion.shape[0] < min_length:
@@ -30,14 +30,13 @@ def load_motion(file_path, min_length, swap=False):
     return motion, motion_swap
 
 
-class MotionNormalizer():
+class MotionNormalizer:
     def __init__(self):
         mean = np.load("datasets/stats/global_mean.npy")
         std = np.load("datasets/stats/global_std.npy")
 
         self.motion_mean = mean
         self.motion_std = std
-
 
     def forward(self, x):
         x = (x - self.motion_mean) / self.motion_std
@@ -47,14 +46,14 @@ class MotionNormalizer():
         x = x * self.motion_std + self.motion_mean
         return x
 
-class MotionNormalizerTorch():
+
+class MotionNormalizerTorch:
     def __init__(self):
         mean = np.load("datasets/stats/global_mean.npy")
         std = np.load("datasets/stats/global_std.npy")
 
         self.motion_mean = torch.from_numpy(mean).float()
         self.motion_std = torch.from_numpy(std).float()
-
 
     def forward(self, x):
         device = x.device
@@ -67,6 +66,7 @@ class MotionNormalizerTorch():
         x = x.clone()
         x = x * self.motion_std.to(device) + self.motion_mean.to(device)
         return x
+
 
 class InterHumanMotion(data.Dataset):
     def __init__(self, opt, normalize=False):
@@ -206,8 +206,8 @@ class InterHumanDataset(data.Dataset):
         self.max_gt_length = 300
         self.min_gt_length = 15
 
-        self.max_length = self.max_cond_length + self.max_gt_length -1
-        self.min_length = self.min_cond_length + self.min_gt_length -1
+        self.max_length = self.max_cond_length + self.max_gt_length - 1
+        self.min_length = self.min_cond_length + self.min_gt_length - 1
 
         self.motion_rep = opt.MOTION_REP
         self.data_list = []
@@ -217,23 +217,31 @@ class InterHumanDataset(data.Dataset):
 
         ignore_list = []
         try:
-            ignore_list = open(os.path.join(opt.DATA_ROOT, "ignore_list.txt"), "r").readlines()
+            ignore_list = open(
+                os.path.join(opt.DATA_ROOT, "ignore_list.txt"), "r"
+            ).readlines()
         except Exception as e:
             print(e)
         data_list = []
         if self.opt.MODE == "train":
             try:
-                data_list = open(os.path.join(opt.DATA_ROOT, "split", "train.txt"), "r").readlines()
+                data_list = open(
+                    os.path.join(opt.DATA_ROOT, "split", "train.txt"), "r"
+                ).readlines()
             except Exception as e:
                 print(e)
         elif self.opt.MODE == "val":
             try:
-                data_list = open(os.path.join(opt.DATA_ROOT, "split", "val.txt"), "r").readlines()
+                data_list = open(
+                    os.path.join(opt.DATA_ROOT, "split", "val.txt"), "r"
+                ).readlines()
             except Exception as e:
                 print(e)
         elif self.opt.MODE == "test":
             try:
-                data_list = open(os.path.join(opt.DATA_ROOT, "split", "test.txt"), "r").readlines()
+                data_list = open(
+                    os.path.join(opt.DATA_ROOT, "split", "test.txt"), "r"
+                ).readlines()
             except Exception as e:
                 print(e)
 
@@ -245,52 +253,78 @@ class InterHumanDataset(data.Dataset):
             for file in tqdm(files):
                 if file.endswith(".npy") and "person1" in root:
                     motion_name = file.split(".")[0]
-                    if file.split(".")[0]+"\n" in ignore_list: # or int(motion_name)>1000
+                    if (
+                        file.split(".")[0] + "\n" in ignore_list
+                    ):  # or int(motion_name)>1000
                         print("ignore: ", file)
                         continue
-                    if file.split(".")[0]+"\n" not in data_list:
+                    if file.split(".")[0] + "\n" not in data_list:
                         continue
                     file_path_person1 = pjoin(root, file)
                     file_path_person2 = pjoin(root.replace("person1", "person2"), file)
-                    text_path = file_path_person1.replace("motions_processed", "annots").replace("person1", "").replace("npy", "txt")
+                    text_path = (
+                        file_path_person1.replace("motions_processed", "annots")
+                        .replace("person1", "")
+                        .replace("npy", "txt")
+                    )
 
                     try:
-                        texts = [item.replace("\n", "") for item in open(text_path, "r").readlines()]
+                        texts = [
+                            item.replace("\n", "")
+                            for item in open(text_path, "r").readlines()
+                        ]
                     except:
                         print(text_path)
                         continue
-                    texts_swap = [item.replace("\n", "").replace("left", "tmp").replace("right", "left").replace("tmp", "right")
-                                  .replace("clockwise", "tmp").replace("counterclockwise","clockwise").replace("tmp","counterclockwise") for item in texts]
+                    texts_swap = [
+                        item.replace("\n", "")
+                        .replace("left", "tmp")
+                        .replace("right", "left")
+                        .replace("tmp", "right")
+                        .replace("clockwise", "tmp")
+                        .replace("counterclockwise", "clockwise")
+                        .replace("tmp", "counterclockwise")
+                        for item in texts
+                    ]
 
-                    motion1, motion1_swap = load_motion(file_path_person1, self.min_length, swap=True)
-                    motion2, motion2_swap = load_motion(file_path_person2, self.min_length, swap=True)
+                    motion1, motion1_swap = load_motion(
+                        file_path_person1, self.min_length, swap=True
+                    )
+                    motion2, motion2_swap = load_motion(
+                        file_path_person2, self.min_length, swap=True
+                    )
                     if motion1 is None:
                         continue
 
                     if self.cache:
                         self.motion_dict[index] = [motion1, motion2]
-                        self.motion_dict[index+1] = [motion1_swap, motion2_swap]
+                        self.motion_dict[index + 1] = [motion1_swap, motion2_swap]
                     else:
                         self.motion_dict[index] = [file_path_person1, file_path_person2]
-                        self.motion_dict[index + 1] = [file_path_person1, file_path_person2]
+                        self.motion_dict[index + 1] = [
+                            file_path_person1,
+                            file_path_person2,
+                        ]
 
-
-
-                    self.data_list.append({
-                        # "idx": idx,
-                        "name": motion_name,
-                        "motion_id": index,
-                        "swap":False,
-                        "texts":texts
-                    })
-                    if opt.MODE == "train":
-                        self.data_list.append({
+                    self.data_list.append(
+                        {
                             # "idx": idx,
-                            "name": motion_name+"_swap",
-                            "motion_id": index+1,
-                            "swap": True,
-                            "texts": texts_swap
-                        })
+                            "name": motion_name,
+                            "motion_id": index,
+                            "swap": False,
+                            "texts": texts,
+                        }
+                    )
+                    if opt.MODE == "train":
+                        self.data_list.append(
+                            {
+                                # "idx": idx,
+                                "name": motion_name + "_swap",
+                                "motion_id": index + 1,
+                                "swap": True,
+                                "texts": texts_swap,
+                            }
+                        )
 
                     index += 2
 
@@ -300,7 +334,7 @@ class InterHumanDataset(data.Dataset):
         return len(self.data_list)
 
     def __len__(self):
-        return self.real_len()*1
+        return self.real_len() * 1
 
     def __getitem__(self, item):
         idx = item % self.real_len()
@@ -328,26 +362,29 @@ class InterHumanDataset(data.Dataset):
         if length > self.max_length:
             idx = random.choice(list(range(0, length - self.max_gt_length, 1)))
             gt_length = self.max_gt_length
-            motion1 = full_motion1[idx:idx + gt_length]
-            motion2 = full_motion2[idx:idx + gt_length]
+            motion1 = full_motion1[idx : idx + gt_length]
+            motion2 = full_motion2[idx : idx + gt_length]
 
         else:
             idx = 0
-            gt_length = min(length - idx, self.max_gt_length )
-            motion1 = full_motion1[idx:idx + gt_length]
-            motion2 = full_motion2[idx:idx + gt_length]
+            gt_length = min(length - idx, self.max_gt_length)
+            motion1 = full_motion1[idx : idx + gt_length]
+            motion2 = full_motion2[idx : idx + gt_length]
 
         if np.random.rand() > 0.5:
             motion1, motion2 = motion2, motion1
-        motion1, root_quat_init1, root_pos_init1 = process_motion_np(motion1, 0.001, 0, n_joints=22)
-        motion2, root_quat_init2, root_pos_init2 = process_motion_np(motion2, 0.001, 0, n_joints=22)
+        motion1, root_quat_init1, root_pos_init1 = process_motion_np(
+            motion1, 0.001, 0, n_joints=22
+        )
+        motion2, root_quat_init2, root_pos_init2 = process_motion_np(
+            motion2, 0.001, 0, n_joints=22
+        )
         r_relative = qmul_np(root_quat_init2, qinv_np(root_quat_init1))
         angle = np.arctan2(r_relative[:, 2:3], r_relative[:, 0:1])
 
         xz = qrot_np(root_quat_init1, root_pos_init2 - root_pos_init1)[:, [0, 2]]
         relative = np.concatenate([angle, xz], axis=-1)[0]
         motion2 = rigid_transform(relative, motion2)
-
 
         gt_motion1 = motion1
         gt_motion2 = motion2
@@ -363,7 +400,6 @@ class InterHumanDataset(data.Dataset):
             padding_zeros = np.zeros((padding_len, D))
             gt_motion1 = np.concatenate((gt_motion1, padding_zeros), axis=0)
             gt_motion2 = np.concatenate((gt_motion2, padding_zeros), axis=0)
-
 
         assert len(gt_motion1) == self.max_gt_length
         assert len(gt_motion2) == self.max_gt_length

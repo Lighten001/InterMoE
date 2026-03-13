@@ -5,7 +5,6 @@ from .interhuman import InterHumanDataset, InterHumanMotion
 from .interx import MotionDatasetV2HHI, Text2MotionDatasetV2HHI
 
 
-
 class DataModule(pl.LightningDataModule):
     def __init__(self, cfg, batch_size, num_workers):
         """
@@ -19,7 +18,7 @@ class DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-    def setup(self, stage = None):
+    def setup(self, stage=None):
         """
         Create train and validation datasets
         """
@@ -28,9 +27,10 @@ class DataModule(pl.LightningDataModule):
                 self.train_dataset = InterHumanMotion(self.cfg.interhuman)
             else:
                 self.train_dataset = InterHumanDataset(self.cfg.interhuman)
-            self.val_dataset = InterHumanDataset(self.cfg.interhuman_val)
+            self.val_dataset = InterHumanDataset(self.cfg.interhuman_test)
         elif self.cfg.NAME == "interx":
             from utils.word_vectorizer import WordVectorizer
+
             if self.cfg.STAGE == "VAE":
                 self.train_dataset = MotionDatasetV2HHI(
                     self.cfg.train,
@@ -45,14 +45,13 @@ class DataModule(pl.LightningDataModule):
                     pjoin(self.cfg.train.motion_dir, "train.h5"),
                 )
             self.val_dataset = Text2MotionDatasetV2HHI(
-                    self.cfg.val,
-                    self.cfg.val.split_file,
-                    WordVectorizer(pjoin(self.cfg.DATA_PROCESSED, "glove"), "hhi_vab"),
-                    pjoin(self.cfg.val.motion_dir, "val.h5"),
-                )
+                self.cfg.val,
+                self.cfg.val.split_file,
+                WordVectorizer(pjoin(self.cfg.DATA_PROCESSED, "glove"), "hhi_vab"),
+                pjoin(self.cfg.val.motion_dir, "val.h5"),
+            )
         else:
             raise NotImplementedError
-
 
         self._train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset,
@@ -71,13 +70,12 @@ class DataModule(pl.LightningDataModule):
             shuffle=False,
             drop_last=True,
         )
-    
 
     def train_dataloader(self):
         """
         Return train dataloader
         """
         return self._train_dataloader
-    
+
     def val_dataloader(self):
         return self._val_dataloader
